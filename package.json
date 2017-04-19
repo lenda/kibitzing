@@ -1,0 +1,25 @@
+{
+  "name": "kibitzing",
+  "version": "1.0.0",
+  "description": "pdf viewer with annotations",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lenda/kibitzing.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lenda/kibitzing/issues"
+  },
+  "homepage": "https://github.com/lenda/kibitzing#readme",
+  "dependencies": {
+    "browserify": "^14.3.0"
+  },
+  "devDependencies": {
+    "pdfjs-dist": "^1.8.233"
+  }
+}
