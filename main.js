@@ -7,6 +7,9 @@ PDFJS.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
 PDFJS.getDocument(url).then(function(pdf) {
   // you can now use *pdf* here
 pdf.getPage(1).then(function(page) {
+    document.getElementById('page_num').innerHTML = 1;
+    document.getElementById('page_count').textContent = pdf.numPages;
+
     var scale = 1.5;
     var viewport = page.getViewport(scale);
 
@@ -23,5 +26,6 @@ pdf.getPage(1).then(function(page) {
 
 });
 });
-
+document.getElementById('next').addEventListener('click', onNextPage);
+document.getElementById('prev').addEventListener('click', onPrevPage);
 };
