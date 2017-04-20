@@ -5,12 +5,14 @@ PDFJS.disableWorker = true;
 // The workerSrc property shall be specified.
 PDFJS.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
 var pageNumberGlobal = 1;
+var numberOfPagesGlobal;
 function renderCanvas (){
 
     PDFJS.getDocument(url).then(function(pdf) {
       // you can now use *pdf* here
     pdf.getPage(pageNumberGlobal).then(function(page) {
-        document.getElementById('page_count').textContent = pdf.numPages;
+        numberOfPagesGlobal = pdf.numPages;
+        document.getElementById('page_count').textContent = numberOfPagesGlobal;
 
 
     document.getElementById('page_num').innerHTML = pageNumberGlobal;
@@ -36,12 +38,14 @@ renderCanvas();
 
 function onNextPage(){
     console.log("inside onNextPage")
+    if(pageNumberGlobal >= numberOfPagesGlobal) return;
     pageNumberGlobal++;
     renderCanvas();
 }
 
 function onPrevPage(){
     console.log("inside onPrevPage")
+    if(pageNumberGlobal <= 1) return;
     pageNumberGlobal--;
     renderCanvas();
 }
