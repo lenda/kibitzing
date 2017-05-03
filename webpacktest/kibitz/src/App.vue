@@ -1,28 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Kibitzing</title>
-    <script src="https://unpkg.com/vue"></script>
-    <script src="//mozilla.github.io/pdf.js/build/pdf.js"></script>
-    <script
-    src="https://code.jquery.com/jquery-3.1.1.min.js"
-    integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
-    crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/semantic-ui/2.2.7/semantic.min.css">
-    <script
-    src="https://code.jquery.com/jquery-3.1.1.min.js"
-    integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
-    crossorigin="anonymous"></script>
-    <!-- <script src="semantic/dist/semantic.min.js"></script> -->
-    <link href='https://fonts.googleapis.com/css?family=Press+Start+2P' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" href="./public/style.css">
-</script>
-</head>
-<body>
-    <div id="app">
+<template>
+<div id="app">
         {{message}}
 
         <nav>
@@ -147,8 +124,60 @@
 	</div>
 
 </div>
-    <script type="text/javascript" src="main.js"></script>
-    <script src="./public/bundle.js"></script>
+</template>
 
-</body>
-</html>
+<script>
+export default {
+    data: function(){
+        return {
+            message: 'hello world',
+            loggedIn: true,
+            activeUser: {
+                name: 'Ellie',
+                pic: null,
+                email: null
+            }
+        }
+    }
+}
+</script>
+
+<style>
+#login-register-forms {
+    padding-top: 100px;
+
+}
+
+#login-form {
+    padding-left: 20%;
+
+}
+
+#register-form {
+    padding-left: 20%;
+
+}
+.main-content {
+   margin-top: 80px;
+}
+.left-column{
+	margin-left: 10px;
+}
+.middle-column{
+	border: 2px solid black;
+	height: 100%;
+}
+.right-column{
+
+}
+#the-canvas{
+	width: 100%;
+	height: 100%;
+}
+.sub-folder{
+	margin-left: 15px;
+}
+.pdf{
+	margin-left: 50px;
+}
+</style>
