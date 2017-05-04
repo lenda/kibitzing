@@ -13,6 +13,8 @@
                     <a v-if="!loggedIn" href="#" class="item">Register</a>
                     <a v-if="!loggedIn" href="#" class="item">Login</a>
                     <a v-else href="#" class="item">{{ 'Hello, ' + activeUser.name }}</a>
+                    <input type="file" v-if="loggedIn" id="file-chooser">
+                    <button v-if="loggedIn" @click="uploadPDF">upload PDF</button>
 
                 </div>
             </div>
@@ -138,6 +140,71 @@ export default {
                 email: null
             }
         }
+    },
+    methods: {
+        userLogin: function(){
+            this.loggedIn = true;
+
+        },
+        userRegister: function(){
+
+        },
+        uploadPDF: function(){
+        var config = new AWS.Config({
+            accessKeyId: "AKIAIBPZ7TTPXXJWSYNQ", secretAccessKey: "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"
+        });
+            AWS.config = config;
+            var bucketName = 'pdf-dev-learning'
+            var bucket = new AWS.S3({
+                params: {
+                    Bucket: bucketName
+                }
+            });
+            var fileChooser = document.getElementById('file-chooser')
+            var file = fileChooser.files[0];
+            console.log(file, "IM the file!")
+            if(file){
+            var params = {
+                Key: file.name,
+                ContentType: file.type,
+                Body: file
+            };
+            bucket.upload(params, function(err, data){
+                if (err) {
+                    console.log(err)
+                } else if (data) {
+                    console.log("Upload Success", data.Location);
+                }
+            })
+            }else{
+                console.log('no file to upload...')
+            }
+
+        },
+        renamePDF: function(){
+
+        },
+        viewPDF: function(){
+
+        },
+        createFolder: function(){
+
+        },
+        renameFolder: function(){
+
+        },
+        createComment: function(){
+
+        },
+        editComment: function(){
+
+        },
+        createThread: function(){
+
+        },
+
+
+
     }
 }
 </script>
