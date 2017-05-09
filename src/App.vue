@@ -161,8 +161,9 @@ export default {
 
         },
         uploadPDF: function(){
+            console.log(process.env, 'AKID')
         var config = new AWS.Config({
-            accessKeyId: "AKIAIBPZ7TTPXXJWSYNQ", secretAccessKey: "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"
+            accessKeyId: process.env.AKID, secretAccessKey: process.env.SAK
         });
             AWS.config = config;
             var bucketName = 'pdf-dev-learning'

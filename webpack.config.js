@@ -1,5 +1,6 @@
 var path = require('path')
 var webpack = require('webpack')
+const DotenvPlugin = require('webpack-dotenv-plugin');
 
 module.exports = {
   entry: './src/main.js',
@@ -45,7 +46,13 @@ module.exports = {
   performance: {
     hints: false
   },
-  devtool: '#eval-source-map'
+  devtool: '#eval-source-map',
+  plugins: [
+    new DotenvPlugin({
+      sample: './.env',
+      path: './.env'
+    })
+  ]
 }
 
 if (process.env.NODE_ENV === 'production') {
