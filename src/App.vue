@@ -72,10 +72,10 @@
 					</div>
 					<div class="sub-folder">
 						<i class="angle down icon"></i>
-						<i class="folder open icon"></i>subfolder
+						<i class="folder open icon"></i>personal
 					</div>
-					<div class="pdf">
-						<i class="file pdf outline icon"></i>random.pdf
+					<div class="pdf" @click="viewPDF">
+						<i class="file pdf outline icon"></i>HMDAGuidelines.pdf
 					</div>
 					<div class="sub-folder">
 						<i class="angle right icon"></i>
@@ -85,13 +85,14 @@
 			</div>
 			<div class="eight wide column middle-column">
 				<div>
+                <canvas-controls></canvas-controls>
   					<button class="ui left labeled icon button" id="prev"><i class="left arrow icon"></i>Prev</button>
 
   					<button class="ui right labeled icon button" id="next"><i class="right arrow icon"></i>Next</button>
   					&nbsp; &nbsp;
- 					 <span>Page: <span id="page_num"></span> / <span id="page_count"></span></span>
+ 					 <span>Page: <span id="page_num" v-if="currentPDF.pageNumber">{{ currentPDF.pageNumber }}</span> / <span id="page_count">{{ currentPDF.numberOfPages }}</span></span>
 				</div>
-				<canvas id="the-canvas"></canvas>
+				<canvas id="the-canvas" ref="pdfcanvas"></canvas>
 			</div>
 		<div class="four wide column right-column">
 			<div class="ui one stackable cards">
@@ -129,6 +130,8 @@
 </template>
 
 <script>
+
+
 export default {
     data: function(){
         return {
@@ -138,6 +141,14 @@ export default {
                 name: 'Ellie',
                 pic: null,
                 email: null
+            },
+            currentPDF: {
+                numberOfPages: null,
+                pageNumber: null,
+                pdfUrl: null,
+                pageRendering: false,
+                pageNumPending: null,
+                pdfName: null
             }
         }
     },
@@ -185,7 +196,71 @@ export default {
 
         },
         viewPDF: function(){
+            var t = this;
+            t.currentPDF.pageNumber = 1;
+            var url = 'http://s3-us-west-1.amazonaws.com/pdf-dev-learning/2013hmda-guide.pdf';
+            PDFJS.disableWorker = true;
+            // The workerSrc property shall be specified.
+            PDFJS.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
 
+
+            function renderCanvas (){
+                t.currentPDF.pageRendering = true;
+
+                PDFJS.getDocument(url).then(function(pdf) {
+                  // you can now use *pdf* here
+                pdf.getPage(t.currentPDF.pageNumber).then(function(page) {
+
+                    t.currentPDF.numberOfPages = pdf.numPages;
+
+                    var scale = 1.5;
+                    var viewport = page.getViewport(scale);
+                    var canvas = t.$refs.pdfcanvas;
+                    var context = canvas.getContext('2d');
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+
+                    var renderContext = {
+                      canvasContext: context,
+                      viewport: viewport
+                    };
+                    var renderTask = page.render(renderContext);
+                    renderTask.promise.then(function() {
+                      t.currentPDF.pageRendering = false;
+                      if (t.currentPDF.pageNumPending !== null) {
+                        // New page rendering is pending
+                        renderCanvas(t.currentPDF.pageNumPending);
+                        t.currentPDF.pageNumPending = null;
+                      }
+                    });
+                });
+            });
+            }
+            function queueRenderPage(num) {
+              if (t.currentPDF.pageRendering) {
+                t.currentPDF.pageNumPending = num;
+              } else {
+                renderCanvas(num);
+              }
+            }
+
+            renderCanvas();
+
+            function onNextPage(){
+                console.log("inside onNextPage");
+                if(t.currentPDF.pageNumber >= t.currentPDF.numberOfPages) return;
+                t.currentPDF.pageNumber++;
+                queueRenderPage();
+            }
+
+            function onPrevPage(){
+                console.log("inside onPrevPage")
+                if(t.currentPDF.pageNumber <= 1) return;
+                t.currentPDF.pageNumber--;
+                queueRenderPage();
+            }
+            document.getElementById('next').addEventListener('click', onNextPage);
+            document.getElementById('prev').addEventListener('click', onPrevPage);
         },
         createFolder: function(){
 
