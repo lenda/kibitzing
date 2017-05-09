@@ -1,0 +1,246 @@
+swagger: '2.0'
+info:
+  title: Kibitzing Files and Folders API
+  description: API to manipulate files and folders
+  version: 1.0.0
+host: kibitzing.herokuapp.com
+schemes:
+  - http
+basePath: /api/v1
+produces:
+  - application/json
+paths:
+  /file:
+    post:
+      summary: Create a new file entry
+      description: >
+        This endpoint allows for creation of a new file entry which will be
+        available at the /file/{id} endpoint 
+      consumes:
+        - application/json
+      parameters:
+        - name: request
+          in: body
+          description: >-
+            The file entry containing all parameters except for ID, which will
+            be assigned
+          required: true
+          schema:
+            $ref: '#/definitions/FileEntry'
+      tags:
+        - FileEntry
+      responses:
+        '202':
+          description: The file entry with the ID assigned
+          schema:
+            $ref: '#/definitions/FileEntry'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/file/{id}':
+    get:
+      summary: Get a specific file entry
+      description: |
+        Returns the specified file entry
+      parameters:
+        - name: id
+          in: path
+          description: ID of the file entry
+          required: true
+          type: string
+      tags:
+        - FileEntry
+      responses:
+        '200':
+          description: A file entry
+          schema:
+            $ref: '#/definitions/FileEntry'
+        '404':
+          description: No file entry with this ID
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      summary: Update a specific file entry
+      description: |
+        Update the specified file entry
+      parameters:
+        - name: id
+          in: path
+          description: ID of the file entry
+          required: true
+          type: string
+        - name: request
+          in: body
+          description: The file entry containing all parameters
+          required: true
+          schema:
+            $ref: '#/definitions/FileEntry'
+      tags:
+        - FileEntry
+      responses:
+        '200':
+          description: A file entry
+          schema:
+            $ref: '#/definitions/FileEntry'
+        '404':
+          description: No file entry with this ID
+        '409':
+          description: >-
+            ID does not match - the ID of the request should match the ID in the
+            path
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/folder/{path}':
+    post:
+      summary: Create a new folder at this path
+      description: Creates a new folder
+      parameters:
+        - name: path
+          in: path
+          description: path of the folder
+          required: true
+          type: string
+      tags:
+        - Folder
+      responses:
+        '200':
+          description: The folder entry
+          schema:
+            $ref: '#/definitions/Folder'
+        '409':
+          description: The folder already exists
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    get:
+      summary: Get folder contents
+      description: Returns the folder entry and all subfolders and files
+      parameters:
+        - name: path
+          in: path
+          description: 'path of the folder, can be blank to specify the root folder'
+          required: true
+          type: string
+      tags:
+        - Folder
+      responses:
+        '200':
+          description: The folder entry
+          schema:
+            $ref: '#/definitions/Folder'
+        '404':
+          description: There is no folder at the specified path
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      summary: Delete the folder
+      description: >-
+        Deletes the folder if it is empty, unless recursive is set to true in
+        which case this will also delete all subfolders and files
+      parameters:
+        - name: path
+          in: path
+          description: 'path of the folder, can be blank to specify the root folder'
+          required: true
+          type: string
+        - name: recursive
+          description: whether or not the delete should be recursive
+          in: query
+          type: boolean
+          required: false
+      tags:
+        - Folder
+      responses:
+        '200':
+          description: Folder entry has been successfully deleted
+        '404':
+          description: There is no folder at the specified path
+        '409':
+          description: Folder is not empty and recursive is not set to true
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    patch:
+      summary: Update folder location
+      description: >-
+        Changes the path of this folder to the path specified in the request
+        object (all other attributes in the object will be ignored), if there
+        are folders missing in the new path they will be automatically created
+      parameters:
+        - name: path
+          in: path
+          description: 'original path of the folder, can be blank to specify the root folder'
+          required: true
+          type: string
+        - name: update
+          in: body
+          description: foo
+          required: true
+          schema:
+            $ref: '#/definitions/Folder'
+      tags:
+        - Folder
+      responses:
+        '200':
+          description: The folder entry updated with the new path
+          schema:
+            $ref: '#/definitions/Folder'
+        '404':
+          description: There is no folder at the specified path
+        '409':
+          description: There already is a folder at the new path
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+definitions:
+  FileEntry:
+    type: object
+    properties:
+      name:
+        type: string
+        description: Name of the file
+      s3url:
+        type: string
+        description: URL of the file contents in S3
+      mimeType:
+        type: string
+        description: 'MIME type of the file, e.g. ''application/pdf'''
+      folder:
+        type: string
+        description: Folder path that this file resides in
+      id:
+        type: string
+        description: ID assigned to the file (leave blank when creating)
+  Folder:
+    type: object
+    properties:
+      path:
+        type: string
+        description: path to this folder
+      subfolders:
+        type: array
+        items:
+          $ref: '#/definitions/Folder'
+      files:
+        type: array
+        items:
+          $ref: '#/definitions/FileEntry'
+  Error:
+    type: object
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+        description: human-friendy message
