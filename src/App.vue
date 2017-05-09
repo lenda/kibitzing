@@ -77,6 +77,9 @@
 					<div class="pdf" @click="viewPDF">
 						<i class="file pdf outline icon"></i>HMDAGuidelines.pdf
 					</div>
+                    <div class="pdf" @click="viewPDF">
+						<i class="file pdf outline icon"></i>resume.pdf
+					</div>
 					<div class="sub-folder">
 						<i class="angle right icon"></i>
 						<i class="folder icon"></i>subfolder
@@ -145,7 +148,7 @@ export default {
             currentPDF: {
                 numberOfPages: null,
                 pageNumber: null,
-                pdfUrl: null,
+                url: 'http://s3-us-west-1.amazonaws.com/pdf-dev-learning/2013hmda-guide.pdf',
                 pageRendering: false,
                 pageNumPending: null,
                 pdfName: null
@@ -161,7 +164,6 @@ export default {
 
         },
         uploadPDF: function(){
-            console.log(process.env, 'AKID')
         var config = new AWS.Config({
             accessKeyId: process.env.AKID, secretAccessKey: process.env.SAK
         });
@@ -174,7 +176,6 @@ export default {
             });
             var fileChooser = document.getElementById('file-chooser')
             var file = fileChooser.files[0];
-            console.log(file, "IM the file!")
             if(file){
             var params = {
                 Key: file.name,
@@ -199,7 +200,7 @@ export default {
         viewPDF: function(){
             var t = this;
             t.currentPDF.pageNumber = 1;
-            var url = 'http://s3-us-west-1.amazonaws.com/pdf-dev-learning/2013hmda-guide.pdf';
+
             PDFJS.disableWorker = true;
             // The workerSrc property shall be specified.
             PDFJS.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
@@ -208,7 +209,7 @@ export default {
             function renderCanvas (){
                 t.currentPDF.pageRendering = true;
 
-                PDFJS.getDocument(url).then(function(pdf) {
+                PDFJS.getDocument(t.currentPDF.url).then(function(pdf) {
                   // you can now use *pdf* here
                 pdf.getPage(t.currentPDF.pageNumber).then(function(page) {
 
@@ -248,14 +249,12 @@ export default {
             renderCanvas();
 
             function onNextPage(){
-                console.log("inside onNextPage");
                 if(t.currentPDF.pageNumber >= t.currentPDF.numberOfPages) return;
                 t.currentPDF.pageNumber++;
                 queueRenderPage();
             }
 
             function onPrevPage(){
-                console.log("inside onPrevPage")
                 if(t.currentPDF.pageNumber <= 1) return;
                 t.currentPDF.pageNumber--;
                 queueRenderPage();
