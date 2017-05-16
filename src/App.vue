@@ -239,7 +239,6 @@ methods: {
                     if ((childFolder.path + '/') === currentPath) {
                         currentFolder = childFolder
                         return insertFile(currentFolder, currentPath, userInput)
-
                     }
                 }
                 t.createFolder(currentPath, currentFolder)
