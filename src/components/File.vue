@@ -1,5 +1,5 @@
 <template >
-    <div class="tree-item" @click="updateCurrentPDF">
+    <div class="tree-item" @click="select">
         <i class="file pdf outline icon"></i>{{fileName}}
     </div>
 </template>
@@ -14,9 +14,9 @@ export default {
         }
     },
     methods: {
-        updateCurrentPDF: function(){
+        select: function(){
             console.log('hello', this.url)
-            this.$emit('updateCurrentPDF', this.url)
+            this.$emit('select', this.url)
         }
     }
 

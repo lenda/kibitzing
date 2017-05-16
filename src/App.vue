@@ -65,7 +65,7 @@
             <div class="ui grid">
                 <div class="three wide column left-column">
                     <div class="tree">
-                        <app-folder :model="rootFolder" v-on:updatePDF="viewPDF($event)">
+                        <app-folder :model="rootFolder" v-on:select="viewPDF($event)">
 
 
 
