@@ -1,6 +1,5 @@
 <template>
-<div id="app">
-        {{message}}
+    <div id="app">
 
         <nav>
             <div class="ui fixed inverted menu">
@@ -19,27 +18,27 @@
                 </div>
             </div>
         </nav>
-    <div class="ui stackable two column grid" v-if="!loggedIn" id="login-register-forms">
-        <div class="row">
-            <div class="column">
-                <form class="ui form" id="login-form">
-                    <h4 class="ui dividing header">Login</h4>
-                    <div class=" six wide field">
-                        <label>Email</label>
-                        <input placeholder="Email" type="email">
-                    </div>
-                    <div class=" six wide field">
-                        <label>Password</label>
-                        <input placeholder="Password" type="password">
-                    </div>
-                    <button type="button" name="button">Login</button>
-                    <button type="button" name="button">Login With Google Account</button>
-                </form>
-            </div>
-            <div class="column">
-                <form v-if="!loggedIn" class="ui form" id="register-form">
-                      <h4 class="ui header">Don't have an account?</h4>
-                      <h4 class="ui dividing header">Register</h4>
+        <div class="ui stackable two column grid" v-if="!loggedIn" id="login-register-forms">
+            <div class="row">
+                <div class="column">
+                    <form class="ui form" id="login-form">
+                        <h4 class="ui dividing header">Login</h4>
+                        <div class=" six wide field">
+                            <label>Email</label>
+                            <input placeholder="Email" type="email">
+                        </div>
+                        <div class=" six wide field">
+                            <label>Password</label>
+                            <input placeholder="Password" type="password">
+                        </div>
+                        <button type="button" name="button">Login</button>
+                        <button type="button" name="button">Login With Google Account</button>
+                    </form>
+                </div>
+                <div class="column">
+                    <form v-if="!loggedIn" class="ui form" id="register-form">
+                        <h4 class="ui header">Don't have an account?</h4>
+                        <h4 class="ui dividing header">Register</h4>
                         <div class="six wide field">
                             <label>First name</label>
                             <input placeholder="First Name" type="text">
@@ -58,125 +57,155 @@
                         </div>
                         <button type="button" name="button">Register</button>
                         <button type="button" name="button">Register With Google Account</button>
-                </form>
+                    </form>
+                </div>
             </div>
         </div>
+        <div class="main-content" v-if="loggedIn">
+            <div class="ui grid">
+                <div class="three wide column left-column">
+                    <div class="tree">
+                        <app-folder :model="rootFolder" >
+
+
+
+                            </app-folder>
+                    </div>
+                </div>
+                <div class="eight wide column middle-column">
+                    <div>
+                        <button class="ui left labeled icon button" id="prev"><i class="left arrow icon"></i>Prev</button>
+
+                        <button class="ui right labeled icon button" id="next"><i class="right arrow icon"></i>Next</button>
+                        &nbsp; &nbsp;
+                        <span>Page: <span id="page_num" v-if="currentPDF.pageNumber">{{ currentPDF.pageNumber }}</span> / <span id="page_count">{{ currentPDF.numberOfPages }}</span></span>
+                    </div>
+                    <canvas id="the-canvas" ref="pdfcanvas"></canvas>
+                </div>
+                <div class="four wide column right-column">
+                    <div class="ui one stackable cards">
+                        <div class="ui raised card">
+                            <div class="content">
+                                <div class="description">
+                                    <p>This is a fake comment</p>
+                                </div>
+                            </div>
+                            <div class="extra content">
+                                <button class="ui primary button">Reply</button>
+                                <div class="right floated author">
+                                    <i class="user big icon"></i> Matt
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ui raised card">
+
+                            <div class="ui form">
+                                <textarea placeholder="Type your comment here."></textarea>
+                            </div>
+                            <div class="extra content">
+                                <button class="ui primary button">Submit</button>
+                                <div class="right floated author">
+                                    <i class="user big icon"></i> You
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
-    <div class="main-content" v-if="loggedIn">
-		<div class="ui grid">
-			<div class="three wide column left-column">
-				<div class="tree">
-					<div class="root-folder">
-						<i class="angle down icon"></i>
-						<i class="folder open icon"></i>root
-					</div>
-					<div class="sub-folder">
-						<i class="angle down icon"></i>
-						<i class="folder open icon"></i>personal
-					</div>
-					<div class="pdf" @click="viewPDF">
-						<i class="file pdf outline icon"></i>HMDAGuidelines.pdf
-					</div>
-                    <div class="pdf" @click="viewPDF">
-						<i class="file pdf outline icon"></i>resume.pdf
-					</div>
-					<div class="sub-folder">
-						<i class="angle right icon"></i>
-						<i class="folder icon"></i>subfolder
-					</div>
-				</div>
-			</div>
-			<div class="eight wide column middle-column">
-				<div>
-                <canvas-controls></canvas-controls>
-  					<button class="ui left labeled icon button" id="prev"><i class="left arrow icon"></i>Prev</button>
-
-  					<button class="ui right labeled icon button" id="next"><i class="right arrow icon"></i>Next</button>
-  					&nbsp; &nbsp;
- 					 <span>Page: <span id="page_num" v-if="currentPDF.pageNumber">{{ currentPDF.pageNumber }}</span> / <span id="page_count">{{ currentPDF.numberOfPages }}</span></span>
-				</div>
-				<canvas id="the-canvas" ref="pdfcanvas"></canvas>
-			</div>
-		<div class="four wide column right-column">
-			<div class="ui one stackable cards">
-				<div class="ui raised card">
-				  <div class="content">
-				    <div class="description">
-				      <p>This is a fake comment</p>
-				    </div>
-				  </div>
-				  <div class="extra content">
-					  <button class="ui primary button">Reply</button>
-				    <div class="right floated author">
-				      <i class="user big icon"></i> Matt
-				    </div>
-				  </div>
-				</div>
-				<div class="ui raised card">
-
-				  <div class="ui form">
-				    <textarea placeholder="Type your comment here."></textarea>
-				  </div>
-				  <div class="extra content">
-					  <button class="ui primary button">Submit</button>
-				    <div class="right floated author">
-				      <i class="user big icon"></i> You
-				    </div>
-				  </div>
-				</div>
-			</div>
-			</div>
-		</div>
-	</div>
-
-</div>
 </template>
 
 <script>
-
+window.Vue = require('vue')
+import File from "./components/File.vue"
+import Folder from "./components/Folder.vue"
 
 export default {
+    components: {
+        'app-file': File,
+        'app-folder': Folder
+    },
     data: function(){
         return {
-            message: 'hello world',
-            loggedIn: true,
-            activeUser: {
-                name: 'Ellie',
-                pic: null,
-                email: null
-            },
-            currentPDF: {
-                numberOfPages: null,
-                pageNumber: null,
-                url: 'http://s3-us-west-1.amazonaws.com/pdf-dev-learning/2013hmda-guide.pdf',
-                pageRendering: false,
-                pageNumPending: null,
-                pdfName: null
-            }
-        }
+            filename: 'resume',
+            rootFolder: {
+                id: 1,
+                path: '/',
+                folders: [
+                    {path: '/state law',
+                    id: 2,
+                    folders: [
+                        {path: '/state law/important',
+                        id: 4,
+                        folders: [
+                            {path: '/state law/important/super important',
+                            id: 5,
+                            folders: [],
+                            files: []
+                        }
+                    ],
+                    files: []
+                }
+            ],
+            files: [
+                {path: '/state law/HMDA Guidelines',
+                id: 1,
+                url: 'http://s3-us-west-1.amazonaws.com/pdf-dev-learning/2013hmda-guide.pdf'}
+            ]
+        },
+        {path: '/personal',
+        id: 3,
+        folders: [],
+        files: []
+    }
+],
+files: []
+},
+loggedIn: true,
+activeUser: {
+    name: 'Ellie',
+    pic: null,
+    email: null
+},
+currentPDF: {
+    numberOfPages: null,
+    pageNumber: null,
+    url: 'http://s3-us-west-1.amazonaws.com/pdf-dev-learning/2013hmda-guide.pdf',
+    pageRendering: false,
+    pageNumPending: null,
+    pdfName: null
+}
+}
+},
+methods: {
+    renderFileSystem: function(){
+
     },
-    methods: {
-        userLogin: function(){
-            this.loggedIn = true;
+    userLogin: function(){
+        this.loggedIn = true;
 
-        },
-        userRegister: function(){
+    },
+    userRegister: function(){
 
-        },
-        uploadPDF: function(){
+    },
+    uploadPDF: function(){
+        var t = this;
+        // uploading to AWS
         var config = new AWS.Config({
             accessKeyId: process.env.AKID, secretAccessKey: process.env.SAK
         });
-            AWS.config = config;
-            var bucketName = 'pdf-dev-learning'
-            var bucket = new AWS.S3({
-                params: {
-                    Bucket: bucketName
-                }
-            });
-            var fileChooser = document.getElementById('file-chooser')
-            var file = fileChooser.files[0];
-            if(file){
+        AWS.config = config;
+        var bucketName = 'pdf-dev-learning'
+        var bucket = new AWS.S3({
+            params: {
+                Bucket: bucketName
+            }
+        });
+        var fileChooser = document.getElementById('file-chooser')
+        var file = fileChooser.files[0];
+        if(file){
             var params = {
                 Key: file.name,
                 ContentType: file.type,
@@ -189,28 +218,66 @@ export default {
                     console.log("Upload Success", data.Location);
                 }
             })
-            }else{
-                console.log('no file to upload...')
+        }else{
+            console.log('no file to upload...')
+            return
+        }
+        // end of AWS upload
+
+        //now add it to our tree view and create any folders needed and post new folders & files to db
+        var newFilesPath = 'personal/resumes/resume.pdf'
+        function insertFile (currentFolder, currentPath, userInput){
+            if(!userInput){
+                userInput = newFilesPath.split('/') //[ resume.pdf']
             }
+            if(!currentFolder){
+                currentFolder = t.rootFolder
+            }
+            if(!currentPath){  // '/personal/resumes'
+                currentPath = '/'
+            }
+            if(userInput.length === 1){
+                console.log(currentPath + userInput[0], 'im the path');
+                currentFolder.files.push({path: currentPath + userInput[0], url: 'https://s3-us-west-1.amazonaws.com/pdf-dev-learning/EleanorsResume.pdf'})
+                return
+            }
+            currentPath += userInput.shift() + '/';
+                for (let childFolder of currentFolder.folders) {
+                    if ((childFolder.path + '/') === currentPath) {
+                        currentFolder = childFolder
+                        return insertFile(currentFolder, currentPath, userInput)
 
-        },
-        renamePDF: function(){
-
-        },
-        viewPDF: function(){
-            var t = this;
-            t.currentPDF.pageNumber = 1;
-
-            PDFJS.disableWorker = true;
-            // The workerSrc property shall be specified.
-            PDFJS.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
+                    }
+                }
+                t.createFolder(currentPath, currentFolder)
+                for(let childFolder of currentFolder.folders){
+                    if(childFolder.path === currentPath){
+                        currentFolder = childFolder
+                    }
+                }
+                return insertFile(currentFolder, currentPath, userInput)
 
 
-            function renderCanvas (){
-                t.currentPDF.pageRendering = true;
+        }
+        insertFile()
+    },
+    renamePDF: function(){
 
-                PDFJS.getDocument(t.currentPDF.url).then(function(pdf) {
-                  // you can now use *pdf* here
+    },
+    viewPDF: function(){
+        var t = this;
+        t.currentPDF.pageNumber = 1;
+
+        PDFJS.disableWorker = true;
+        // The workerSrc property shall be specified.
+        PDFJS.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
+
+
+        function renderCanvas (){
+            t.currentPDF.pageRendering = true;
+
+            PDFJS.getDocument(t.currentPDF.url).then(function(pdf) {
+                // you can now use *pdf* here
                 pdf.getPage(t.currentPDF.pageNumber).then(function(page) {
 
                     t.currentPDF.numberOfPages = pdf.numPages;
@@ -223,64 +290,71 @@ export default {
                     canvas.width = viewport.width;
 
                     var renderContext = {
-                      canvasContext: context,
-                      viewport: viewport
+                        canvasContext: context,
+                        viewport: viewport
                     };
                     var renderTask = page.render(renderContext);
                     renderTask.promise.then(function() {
-                      t.currentPDF.pageRendering = false;
-                      if (t.currentPDF.pageNumPending !== null) {
-                        // New page rendering is pending
-                        renderCanvas(t.currentPDF.pageNumPending);
-                        t.currentPDF.pageNumPending = null;
-                      }
+                        t.currentPDF.pageRendering = false;
+                        if (t.currentPDF.pageNumPending !== null) {
+                            // New page rendering is pending
+                            renderCanvas(t.currentPDF.pageNumPending);
+                            t.currentPDF.pageNumPending = null;
+                        }
                     });
                 });
             });
-            }
-            function queueRenderPage(num) {
-              if (t.currentPDF.pageRendering) {
+        }
+        function queueRenderPage(num) {
+            if (t.currentPDF.pageRendering) {
                 t.currentPDF.pageNumPending = num;
-              } else {
+            } else {
                 renderCanvas(num);
-              }
             }
+        }
 
-            renderCanvas();
+        renderCanvas();
 
-            function onNextPage(){
-                if(t.currentPDF.pageNumber >= t.currentPDF.numberOfPages) return;
-                t.currentPDF.pageNumber++;
-                queueRenderPage();
-            }
+        function onNextPage(){
+            if(t.currentPDF.pageNumber >= t.currentPDF.numberOfPages) return;
+            t.currentPDF.pageNumber++;
+            queueRenderPage();
+        }
 
-            function onPrevPage(){
-                if(t.currentPDF.pageNumber <= 1) return;
-                t.currentPDF.pageNumber--;
-                queueRenderPage();
-            }
-            document.getElementById('next').addEventListener('click', onNextPage);
-            document.getElementById('prev').addEventListener('click', onPrevPage);
-        },
-        createFolder: function(){
+        function onPrevPage(){
+            if(t.currentPDF.pageNumber <= 1) return;
+            t.currentPDF.pageNumber--;
+            queueRenderPage();
+        }
+        document.getElementById('next').addEventListener('click', onNextPage);
+        document.getElementById('prev').addEventListener('click', onPrevPage);
+    },
+    createFolder: function(currentPath, currentFolder){
+        var t = this;
+        //curentpath:  '/personal/resumes'
+        //currentFolder: 'personal'
+        var newPath = currentPath.slice(0, -1)
+        console.log(currentFolder.path, 'im the new folders parent folder');
+        console.log(newPath, 'i should the the folders name');
+        currentFolder.folders.push({path: newPath, folders: [], files: []})
 
-        },
-        renameFolder: function(){
+    },
+    renameFolder: function(){
 
-        },
-        createComment: function(){
+    },
+    createComment: function(){
 
-        },
-        editComment: function(){
+    },
+    editComment: function(){
 
-        },
-        createThread: function(){
+    },
+    createThread: function(){
 
-        },
+    },
 
 
 
-    }
+}
 }
 </script>
 
@@ -300,26 +374,29 @@ export default {
 
 }
 .main-content {
-   margin-top: 80px;
+    margin-top: 80px;
 }
 .left-column{
-	margin-left: 10px;
+    margin-left: 10px;
 }
 .middle-column{
-	border: 2px solid black;
-	height: 100%;
+    border: 2px solid black;
+    height: 100%;
 }
 .right-column{
 
 }
 #the-canvas{
-	width: 100%;
-	height: 100%;
+    width: 100%;
+    height: 100%;
 }
 .sub-folder{
-	margin-left: 15px;
+    margin-left: 15px;
 }
 .pdf{
-	margin-left: 50px;
+    margin-left: 50px;
+}
+.tree-item {
+    padding-left: 1em;
 }
 </style>

@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "dotenv": "^4.0.0",
+    "swagger-js-codegen": "^1.8.0",
     "vue": "^2.2.1"
   },
   "devDependencies": {
