@@ -1,11 +1,11 @@
 
-<template id='folder'>
+<template>
     <div class="component tree-item">
         <i class="angle down icon"></i>
         <i class="folder open icon"></i>{{folderName}}
 
 
-        <app-file v-show="hasFiles" v-for="file in model.files" :key="file.id" :name="file.path"></app-file>
+        <app-file v-show="hasFiles" v-for="file in model.files" :key="file.id" :path="file.path" :url="file.url"></app-file>
             <folder v-show="hasFolders" v-for="folder in model.folders" :model="folder" :key="folder.id"></folder>
     </div>
 </template>
@@ -14,12 +14,12 @@
 import Vue from 'vue'
 import File from "./File.vue"
     var folder = Vue.component('folder', {
-    template: '#folder',
     components: {
         'app-file': File
     },
     props: {
-        model: Object
+        model: Object,
+
     },
     data: function(){
         return {
