@@ -65,7 +65,7 @@
             <div class="ui grid">
                 <div class="three wide column left-column">
                     <div class="tree">
-                        <app-folder :model="rootFolder" >
+                        <app-folder :model="rootFolder" v-on:updatePDF="viewPDF($event)">
 
 
 
@@ -74,9 +74,9 @@
                 </div>
                 <div class="eight wide column middle-column">
                     <div>
-                        <button class="ui left labeled icon button" id="prev"><i class="left arrow icon"></i>Prev</button>
+                        <button class="ui left labeled icon button" id="prev" @click="onPrevPage"><i class="left arrow icon"></i>Prev</button>
 
-                        <button class="ui right labeled icon button" id="next"><i class="right arrow icon"></i>Next</button>
+                        <button class="ui right labeled icon button" id="next" @click="onNextPage"><i class="right arrow icon"></i>Next</button>
                         &nbsp; &nbsp;
                         <span>Page: <span id="page_num" v-if="currentPDF.pageNumber">{{ currentPDF.pageNumber }}</span> / <span id="page_count">{{ currentPDF.numberOfPages }}</span></span>
                     </div>
@@ -119,12 +119,10 @@
 
 <script>
 window.Vue = require('vue')
-import File from "./components/File.vue"
 import Folder from "./components/Folder.vue"
 
 export default {
     components: {
-        'app-file': File,
         'app-folder': Folder
     },
     data: function(){
@@ -227,20 +225,15 @@ methods: {
         //now add it to our tree view and create any folders needed and post new folders & files to db
         var newFilesPath = 'personal/resumes/resume.pdf'
         function insertFile (currentFolder, currentPath, userInput){
-            if(!userInput){
-                userInput = newFilesPath.split('/') //[ resume.pdf']
-            }
-            if(!currentFolder){
-                currentFolder = t.rootFolder
-            }
-            if(!currentPath){  // '/personal/resumes'
-                currentPath = '/'
-            }
+            if(!userInput) userInput = newFilesPath.split('/')
+            if(!currentFolder) currentFolder = t.rootFolder
+            if(!currentPath) currentPath = '/'
             if(userInput.length === 1){
-                console.log(currentPath + userInput[0], 'im the path');
+                console.log(currentFolder.path, 'Im the path tobe inserted into')
                 currentFolder.files.push({path: currentPath + userInput[0], url: 'https://s3-us-west-1.amazonaws.com/pdf-dev-learning/EleanorsResume.pdf'})
                 return
             }
+
             currentPath += userInput.shift() + '/';
                 for (let childFolder of currentFolder.folders) {
                     if ((childFolder.path + '/') === currentPath) {
@@ -251,84 +244,140 @@ methods: {
                 }
                 t.createFolder(currentPath, currentFolder)
                 for(let childFolder of currentFolder.folders){
-                    if(childFolder.path === currentPath){
+                    if(childFolder.path + '/' === currentPath){
                         currentFolder = childFolder
                     }
                 }
                 return insertFile(currentFolder, currentPath, userInput)
-
-
         }
         insertFile()
     },
+
     renamePDF: function(){
 
     },
-    viewPDF: function(){
+
+    viewPDF: function(url){
+        console.log("hi from the app component");
         var t = this;
         t.currentPDF.pageNumber = 1;
 
         PDFJS.disableWorker = true;
         // The workerSrc property shall be specified.
         PDFJS.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
+        console.log('hey!!!!!' , url)
+        t.currentPDF.url = url
 
+        // function renderCanvas (){
+        //     t.currentPDF.pageRendering = true;
+        //     t.currentPDF.url = 'http://s3-us-west-1.amazonaws.com/pdf-dev-learning/2013hmda-guide.pdf'
+        //     PDFJS.getDocument(t.currentPDF.url).then(function(pdf) {
+        //         // you can now use *pdf* here
+        //         pdf.getPage(t.currentPDF.pageNumber).then(function(page) {
+        //
+        //             t.currentPDF.numberOfPages = pdf.numPages;
+        //
+        //             var scale = 1.5;
+        //             var viewport = page.getViewport(scale);
+        //             var canvas = t.$refs.pdfcanvas;
+        //             var context = canvas.getContext('2d');
+        //             canvas.height = viewport.height;
+        //             canvas.width = viewport.width;
+        //
+        //             var renderContext = {
+        //                 canvasContext: context,
+        //                 viewport: viewport
+        //             };
+        //             var renderTask = page.render(renderContext);
+        //             renderTask.promise.then(function() {
+        //                 t.currentPDF.pageRendering = false;
+        //                 if (t.currentPDF.pageNumPending !== null) {
+        //                     // New page rendering is pending
+        //                     renderCanvas(t.currentPDF.pageNumPending);
+        //                     t.currentPDF.pageNumPending = null;
+        //                 }
+        //             });
+        //         });
+        //     });
+        // }
+        // function queueRenderPage(num) {
+        //     if (t.currentPDF.pageRendering) {
+        //         t.currentPDF.pageNumPending = num;
+        //     } else {
+        //         t.renderCanvas(num);
+        //     }
+        // }
 
-        function renderCanvas (){
-            t.currentPDF.pageRendering = true;
+        t.renderCanvas();
 
-            PDFJS.getDocument(t.currentPDF.url).then(function(pdf) {
-                // you can now use *pdf* here
-                pdf.getPage(t.currentPDF.pageNumber).then(function(page) {
+        // function onNextPage(){
+        //     if(t.currentPDF.pageNumber >= t.currentPDF.numberOfPages) return;
+        //     t.currentPDF.pageNumber++;
+        //     t.queueRenderPage();
+        // }
+        //
+        // function onPrevPage(){
+        //     if(t.currentPDF.pageNumber <= 1) return;
+        //     t.currentPDF.pageNumber--;
+        //     t.queueRenderPage();
+        // }
+        // document.getElementById('next').addEventListener('click', onNextPage);
+        // document.getElementById('prev').addEventListener('click', onPrevPage);
+    },
+    queueRenderPage: function(num) {
+        var t = this;
+        if (t.currentPDF.pageRendering) {
+            t.currentPDF.pageNumPending = num;
+        } else {
+            t.renderCanvas(num);
+        }
+    },
+    onNextPage: function(){
+        var t = this;
+        if(t.currentPDF.pageNumber >= t.currentPDF.numberOfPages) return;
+        t.currentPDF.pageNumber++;
+        t.queueRenderPage();
+    },
+    onPrevPage: function(){
+        var t = this;
+        if(t.currentPDF.pageNumber <= 1) return;
+        t.currentPDF.pageNumber--;
+        t.queueRenderPage();
+    },
+    renderCanvas: function(){
+        var t = this;
+        t.currentPDF.pageRendering = true;
+        t.currentPDF.url = 'http://s3-us-west-1.amazonaws.com/pdf-dev-learning/2013hmda-guide.pdf'
+        PDFJS.getDocument(t.currentPDF.url).then(function(pdf) {
+            // you can now use *pdf* here
+            pdf.getPage(t.currentPDF.pageNumber).then(function(page) {
 
-                    t.currentPDF.numberOfPages = pdf.numPages;
+                t.currentPDF.numberOfPages = pdf.numPages;
 
-                    var scale = 1.5;
-                    var viewport = page.getViewport(scale);
-                    var canvas = t.$refs.pdfcanvas;
-                    var context = canvas.getContext('2d');
-                    canvas.height = viewport.height;
-                    canvas.width = viewport.width;
+                var scale = 1.5;
+                var viewport = page.getViewport(scale);
+                var canvas = t.$refs.pdfcanvas;
+                var context = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
 
-                    var renderContext = {
-                        canvasContext: context,
-                        viewport: viewport
-                    };
-                    var renderTask = page.render(renderContext);
-                    renderTask.promise.then(function() {
-                        t.currentPDF.pageRendering = false;
-                        if (t.currentPDF.pageNumPending !== null) {
-                            // New page rendering is pending
-                            renderCanvas(t.currentPDF.pageNumPending);
-                            t.currentPDF.pageNumPending = null;
-                        }
-                    });
+                var renderContext = {
+                    canvasContext: context,
+                    viewport: viewport
+                };
+                var renderTask = page.render(renderContext);
+                renderTask.promise.then(function() {
+                    t.currentPDF.pageRendering = false;
+                    if (t.currentPDF.pageNumPending !== null) {
+                        // New page rendering is pending
+                        t.renderCanvas(t.currentPDF.pageNumPending);
+                        t.currentPDF.pageNumPending = null;
+                    }
                 });
             });
-        }
-        function queueRenderPage(num) {
-            if (t.currentPDF.pageRendering) {
-                t.currentPDF.pageNumPending = num;
-            } else {
-                renderCanvas(num);
-            }
-        }
-
-        renderCanvas();
-
-        function onNextPage(){
-            if(t.currentPDF.pageNumber >= t.currentPDF.numberOfPages) return;
-            t.currentPDF.pageNumber++;
-            queueRenderPage();
-        }
-
-        function onPrevPage(){
-            if(t.currentPDF.pageNumber <= 1) return;
-            t.currentPDF.pageNumber--;
-            queueRenderPage();
-        }
-        document.getElementById('next').addEventListener('click', onNextPage);
-        document.getElementById('prev').addEventListener('click', onPrevPage);
+        });
     },
+
     createFolder: function(currentPath, currentFolder){
         var t = this;
         //curentpath:  '/personal/resumes'
