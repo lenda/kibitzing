@@ -65,7 +65,7 @@
             <div class="ui grid">
                 <div class="three wide column left-column">
                     <div class="tree">
-                        <app-folder :model="rootFolder" v-on:select="viewPDF($event)">
+                        <app-folder :model="rootFolder" v-on:selectPDF="viewPDF($event)">
 
 
 
@@ -207,7 +207,8 @@ methods: {
             var params = {
                 Key: file.name,
                 ContentType: file.type,
-                Body: file
+                Body: file,
+                ACL: 'public-read'
             };
             bucket.upload(params, function(err, data){
                 if (err) {
@@ -260,68 +261,11 @@ methods: {
         console.log("hi from the app component");
         var t = this;
         t.currentPDF.pageNumber = 1;
-
         PDFJS.disableWorker = true;
-        // The workerSrc property shall be specified.
         PDFJS.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
-        console.log('hey!!!!!' , url)
         t.currentPDF.url = url
-
-        // function renderCanvas (){
-        //     t.currentPDF.pageRendering = true;
-        //     t.currentPDF.url = 'http://s3-us-west-1.amazonaws.com/pdf-dev-learning/2013hmda-guide.pdf'
-        //     PDFJS.getDocument(t.currentPDF.url).then(function(pdf) {
-        //         // you can now use *pdf* here
-        //         pdf.getPage(t.currentPDF.pageNumber).then(function(page) {
-        //
-        //             t.currentPDF.numberOfPages = pdf.numPages;
-        //
-        //             var scale = 1.5;
-        //             var viewport = page.getViewport(scale);
-        //             var canvas = t.$refs.pdfcanvas;
-        //             var context = canvas.getContext('2d');
-        //             canvas.height = viewport.height;
-        //             canvas.width = viewport.width;
-        //
-        //             var renderContext = {
-        //                 canvasContext: context,
-        //                 viewport: viewport
-        //             };
-        //             var renderTask = page.render(renderContext);
-        //             renderTask.promise.then(function() {
-        //                 t.currentPDF.pageRendering = false;
-        //                 if (t.currentPDF.pageNumPending !== null) {
-        //                     // New page rendering is pending
-        //                     renderCanvas(t.currentPDF.pageNumPending);
-        //                     t.currentPDF.pageNumPending = null;
-        //                 }
-        //             });
-        //         });
-        //     });
-        // }
-        // function queueRenderPage(num) {
-        //     if (t.currentPDF.pageRendering) {
-        //         t.currentPDF.pageNumPending = num;
-        //     } else {
-        //         t.renderCanvas(num);
-        //     }
-        // }
-
         t.renderCanvas();
 
-        // function onNextPage(){
-        //     if(t.currentPDF.pageNumber >= t.currentPDF.numberOfPages) return;
-        //     t.currentPDF.pageNumber++;
-        //     t.queueRenderPage();
-        // }
-        //
-        // function onPrevPage(){
-        //     if(t.currentPDF.pageNumber <= 1) return;
-        //     t.currentPDF.pageNumber--;
-        //     t.queueRenderPage();
-        // }
-        // document.getElementById('next').addEventListener('click', onNextPage);
-        // document.getElementById('prev').addEventListener('click', onPrevPage);
     },
     queueRenderPage: function(num) {
         var t = this;
@@ -346,7 +290,6 @@ methods: {
     renderCanvas: function(){
         var t = this;
         t.currentPDF.pageRendering = true;
-        t.currentPDF.url = 'http://s3-us-west-1.amazonaws.com/pdf-dev-learning/2013hmda-guide.pdf'
         PDFJS.getDocument(t.currentPDF.url).then(function(pdf) {
             // you can now use *pdf* here
             pdf.getPage(t.currentPDF.pageNumber).then(function(page) {
@@ -379,8 +322,7 @@ methods: {
 
     createFolder: function(currentPath, currentFolder){
         var t = this;
-        //curentpath:  '/personal/resumes'
-        //currentFolder: 'personal'
+
         var newPath = currentPath.slice(0, -1)
         console.log(currentFolder.path, 'im the new folders parent folder');
         console.log(newPath, 'i should the the folders name');

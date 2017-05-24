@@ -15,7 +15,7 @@ export default {
     },
     methods: {
         select: function(){
-            console.log('hello', this.url)
+            console.log('hello from the file component', this.url)
             this.$emit('select', this.url)
         }
     }

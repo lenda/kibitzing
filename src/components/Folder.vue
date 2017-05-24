@@ -5,8 +5,8 @@
         <i class="folder open icon"></i>{{folderName}}
 
 
-        <app-file v-show="hasFiles" v-for="file in model.files" :key="file.id" :path="file.path" :url="file.url" v-on:select="select($event)"></app-file>
-            <folder v-show="hasFolders" v-for="folder in model.folders" :model="folder" :key="folder.id" v-on:select="select($event)"></folder>
+        <app-file v-show="hasFiles" v-for="file in model.files" :key="file.id" :path="file.path" :url="file.url" v-on:select="selectPDF($event)"></app-file>
+            <folder v-show="hasFolders" v-for="folder in model.folders" :model="folder" :key="folder.id" v-on:selectPDF="selectPDF($event)"></folder>
     </div>
 </template>
 
@@ -27,9 +27,9 @@ import File from "./File.vue"
         }
     },
     methods: {
-        select(url) {
-            console.log("folder "+this.folderName+" received ",url);
-            this.$emit('select',url);
+        selectPDF(url) {
+            console.log("folder " + this.folderName +" received ",url);
+            this.$emit('selectPDF',url);
         }
 
     },
