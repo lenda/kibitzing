@@ -3,6 +3,8 @@
 const express = require('express');
 const router = express.Router();
 const knex = require('../../knex');
+const bcrypt = require("bcrypt-as-promised");
+
 
 router.route('/login').post(function(req, res, next){
   knex('user').where("email", req.body.email)
