@@ -5,8 +5,8 @@
         <i class="folder open icon"></i>{{folderName}}
 
 
-        <app-file v-show="hasFiles" v-for="file in model.files" :key="file.id" :path="file.path" :url="file.url" v-on:select="selectPDF($event)"></app-file>
-            <folder v-show="hasFolders" v-for="folder in model.folders" :model="folder" :key="folder.id" v-on:selectPDF="selectPDF($event)"></folder>
+        <app-file v-show="hasFiles" v-for="file of model.files" :key="file.id" :path="file.path" :url="file.url" v-on:select="selectPDF($event)"></app-file>
+            <folder v-show="hasFolders" v-for="folder of model.folders" :model="folder" :key="folder.id" v-on:selectPDF="selectPDF($event)"></folder>
     </div>
 </template>
 
@@ -35,10 +35,10 @@ import File from "./File.vue"
     },
     computed: {
         hasFolders: function(){
-            return this.model.folders.length;
+            return this.model.folders
         },
         hasFiles: function(){
-            return this.model.files.length;
+            return this.model.files
         },
         folderName: function(){
             var lastIdx = this.model.path.lastIndexOf('/');
