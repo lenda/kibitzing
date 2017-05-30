@@ -201,6 +201,11 @@ export default {
   data: function(){
     return {
       foldersLoaded: false,
+      PDFLaunchpad: {
+        fileName: '',
+        filePath: '',
+        fileUrl: ''
+      },
       filename: 'resume',
       rootFolder: {},
       loggedIn: true,
@@ -267,32 +272,70 @@ export default {
 
       //now add it to our tree view and create any folders needed and post new folders & files to db
       var newFilesPath = 'personal/resumes/resume.pdf'
-      function insertFile (currentFolder, currentPath, userInput){
-        if(!userInput) userInput = newFilesPath.split('/')
-        if(!currentFolder) currentFolder = t.rootFolder
-        if(!currentPath) currentPath = '/'
-        if(userInput.length === 1){
-          console.log(currentFolder.path, 'Im the path tobe inserted into')
-          currentFolder.files.push({path: currentPath + userInput[0], url: 'https://s3-us-west-1.amazonaws.com/pdf-dev-learning/EleanorsResume.pdf'})
-          return
-        }
+      t.PDFLaunchpad.filePath = newFilesPath
+      t.PDFLaunchpad.fileName = newFilesPath.slice(newFilesPath.lastIndexOf('/') + 1)
 
-        currentPath += userInput.shift() + '/';
-        for (let childFolder of currentFolder.folders) {
-          if ((childFolder.path + '/') === currentPath) {
-            currentFolder = childFolder
-            return insertFile(currentFolder, currentPath, userInput)
-          }
-        }
-        t.createFolder(currentPath, currentFolder)
-        for(let childFolder of currentFolder.folders){
-          if(childFolder.path + '/' === currentPath){
-            currentFolder = childFolder
-          }
-        }
-        return insertFile(currentFolder, currentPath, userInput)
+      // function insertFile (currentFolder, currentPath, userInput){
+      //   if(!userInput) userInput = newFilesPath.split('/')
+      //   if(!currentFolder) currentFolder = t.rootFolder
+      //   if(!currentPath) currentPath = '/'
+      //   if(userInput.length === 1){
+      //     console.log(currentFolder.path, 'Im the path tobe inserted into')
+      //     currentFolder.files.push({path: currentPath + userInput[0], url: 'https://s3-us-west-1.amazonaws.com/pdf-dev-learning/EleanorsResume.pdf'})
+      //     return
+      //   }
+      //
+      //   currentPath += userInput.shift() + '/';
+      //   for (let childFolder of currentFolder.folders) {
+      //     if ((childFolder.path + '/') === currentPath) {
+      //       currentFolder = childFolder
+      //       return insertFile(currentFolder, currentPath, userInput)
+      //     }
+      //   }
+      //   t.createFolder(currentPath, currentFolder)
+      //   for(let childFolder of currentFolder.folders){
+      //     if(childFolder.path + '/' === currentPath){
+      //       currentFolder = childFolder
+      //     }
+      //   }
+      //   return insertFile(currentFolder, currentPath, userInput)
+      // }
+      var newRoot = Object.assign({}, t.rootFolder)
+      t.insertFile(null, null, null, newRoot)
+      console.log(t.rootFolder, 'im the rootFolder after uploading a pdf');
+      t.rootFolder = newRoot
+    },
+
+    insertFile: function (currentFolder, currentPath, userInput, newRootFolder){
+      console.log('recursive call CurFolder: ', currentFolder, 'currentPath: ', currentPath, "userinput: ", userInput)
+      var t = this;
+      if(!userInput) userInput = t.PDFLaunchpad.filePath.split('/')
+      if(!currentFolder) currentFolder = newRootFolder
+      if(!currentPath) currentPath = '/'
+      if(userInput.length === 1){
+        console.log(currentFolder.path, 'Im the path tobe inserted into')
+        currentFolder.files[t.PDFLaunchpad.fileName] = {path: currentPath + userInput[0], url: 'https://s3-us-west-1.amazonaws.com/pdf-dev-learning/EleanorsResume.pdf'};
+        return
       }
-      insertFile()
+
+      currentPath += userInput.shift() + '/';
+      for (let childFolder in currentFolder.folders) {
+        console.log('made it to line 319 childfolder: ', currentFolder.folders[childFolder].path + '/', 'curPath:', currentPath)
+        if ((currentFolder.folders[childFolder].path + '/') === currentPath) {
+          console.log('indexgin into another obj');
+          currentFolder = currentFolder.folders[childFolder]
+          return t.insertFile(currentFolder, currentPath, userInput)
+        }
+      }
+      t.createFolder(currentPath, currentFolder)
+      for(let childFolder in currentFolder.folders){
+        console.log("line 327/ CurPath:", currentPath, 'Childfolder:', currentFolder.folders[childFolder].path);
+        if(currentFolder.folders[childFolder].path + '/' === currentPath){
+          console.log('they match!!!!!!!!!');
+          currentFolder = currentFolder.folders[childFolder]
+        }
+      }
+      return t.insertFile(currentFolder, currentPath, userInput)
     },
 
     renamePDF: function(){
@@ -368,7 +411,9 @@ export default {
       var newPath = currentPath.slice(0, -1)
       console.log(currentFolder.path, 'im the new folders parent folder');
       console.log(newPath, 'i should the the folders name');
-      currentFolder.folders.push({path: newPath, folders: [], files: []})
+      var folderName = newPath.slice(newPath.lastIndexOf('/') + 1)
+      console.log(folderName, "<-- im the foldername");
+      currentFolder.folders[folderName] = {path: newPath, folders: {}, files: {}};
 
     },
     renameFolder: function(){
