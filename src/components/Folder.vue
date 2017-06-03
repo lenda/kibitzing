@@ -41,6 +41,7 @@ import File from "./File.vue"
             return this.model.files
         },
         folderName: function(){
+            if(this.model.path === '/') return '/'
             var lastIdx = this.model.path.lastIndexOf('/');
             return this.model.path.slice(lastIdx+1)
         }

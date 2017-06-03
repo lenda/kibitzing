@@ -9,6 +9,7 @@
     "build": "cross-env NODE_ENV=production webpack --progress --hide-modules"
   },
   "dependencies": {
+    "bcrypt": "^1.0.2",
     "bcrypt-as-promised": "^1.1.0",
     "body-parser": "^1.17.2",
     "dotenv": "^4.0.0",
