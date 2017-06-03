@@ -124,7 +124,7 @@ import Folder from "./components/Folder.vue"
 export default {
   beforeCreate: function(){
     //ajax call to ppulate data
-    this.$http.get('http://localhost:8000/api/folders').then(function(folders){
+    this.$http.get('http://localhost:8000/api/folders/').then(function(folders){
       console.log(this.rootFolder, "im the rootFolder");
 
       this.$http.get('http://localhost:8000/api/pdfs').then(function(pdfs){
