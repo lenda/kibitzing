@@ -262,6 +262,7 @@ export default {
             console.log(err)
           } else if (data) {
             console.log("Upload Success", data.Location);
+            t.PDFLaunchpad.fileUrl = data.Location;
           }
         })
       }else{
@@ -272,34 +273,10 @@ export default {
 
       //now add it to our tree view and create any folders needed and post new folders & files to db
       var newFilesPath = 'personal/resumes/resume.pdf'
+      var uploadedPDFName = prompt("What's the file called?")
       t.PDFLaunchpad.filePath = newFilesPath
       t.PDFLaunchpad.fileName = newFilesPath.slice(newFilesPath.lastIndexOf('/') + 1)
 
-      // function insertFile (currentFolder, currentPath, userInput){
-      //   if(!userInput) userInput = newFilesPath.split('/')
-      //   if(!currentFolder) currentFolder = t.rootFolder
-      //   if(!currentPath) currentPath = '/'
-      //   if(userInput.length === 1){
-      //     console.log(currentFolder.path, 'Im the path tobe inserted into')
-      //     currentFolder.files.push({path: currentPath + userInput[0], url: 'https://s3-us-west-1.amazonaws.com/pdf-dev-learning/EleanorsResume.pdf'})
-      //     return
-      //   }
-      //
-      //   currentPath += userInput.shift() + '/';
-      //   for (let childFolder of currentFolder.folders) {
-      //     if ((childFolder.path + '/') === currentPath) {
-      //       currentFolder = childFolder
-      //       return insertFile(currentFolder, currentPath, userInput)
-      //     }
-      //   }
-      //   t.createFolder(currentPath, currentFolder)
-      //   for(let childFolder of currentFolder.folders){
-      //     if(childFolder.path + '/' === currentPath){
-      //       currentFolder = childFolder
-      //     }
-      //   }
-      //   return insertFile(currentFolder, currentPath, userInput)
-      // }
       var newRoot = Object.assign({}, t.rootFolder)
       t.insertFile(null, null, null, newRoot)
       console.log(t.rootFolder, 'im the rootFolder after uploading a pdf');
