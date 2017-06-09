@@ -12,12 +12,22 @@
           <a v-if="!loggedIn" href="#" class="item">Register</a>
           <a v-if="!loggedIn" href="#" class="item">Login</a>
           <a v-else href="#" class="item">{{ 'Hello, ' + activeUser.name }}</a>
-          <input type="file" v-if="loggedIn" id="file-chooser">
-          <button v-if="loggedIn" @click="uploadPDF">upload PDF</button>
+
 
         </div>
       </div>
     </nav>
+
+    <div ref="mymodal" class="ui modal">
+      <div class="header">Header</div>
+      <div class="content">
+        <input type="file" id="file-chooser">
+        <p>Enter the path for the new PDF</p>
+        <input type="text" v-model="PDFLaunchpad.filePath" >
+        <button @click="uploadPDF">Upload</button>
+      </div>
+    </div>
+
     <div class="ui stackable two column grid" v-if="!loggedIn" id="login-register-forms">
       <div class="row">
         <div class="column">
@@ -66,11 +76,11 @@
         <div class="three wide column left-column">
           <div v-if="foldersLoaded" class="tree">
             <app-folder :model="rootFolder" v-on:selectPDF="viewPDF($event)">
-
-
-
             </app-folder>
+
           </div>
+          <br>
+          <button v-if="loggedIn" @click="openModal">upload PDF</button>
         </div>
         <div class="eight wide column middle-column">
           <div>
@@ -201,6 +211,7 @@ export default {
   data: function(){
     return {
       foldersLoaded: false,
+      modalOpen: false,
       PDFLaunchpad: {
         fileName: '',
         filePath: '',
@@ -236,7 +247,7 @@ export default {
 
     },
     uploadPDF: function(){
-      var t = this;
+      const t = this;
       // uploading to AWS
       var config = new AWS.Config({
         accessKeyId: process.env.AKID, secretAccessKey: process.env.SAK
@@ -272,9 +283,9 @@ export default {
       // end of AWS upload
 
       //now add it to our tree view and create any folders needed and post new folders & files to db
-      var newFilesPath = 'personal/resumes/resume.pdf'
-      var uploadedPDFName = prompt("What's the file called?")
-      t.PDFLaunchpad.filePath = newFilesPath
+      var newFilesPath = t.PDFLaunchpad.filePath
+      // var uploadedPDFName = prompt("What's the file called?")
+      // t.PDFLaunchpad.filePath = newFilesPath
       t.PDFLaunchpad.fileName = newFilesPath.slice(newFilesPath.lastIndexOf('/') + 1)
 
       var newRoot = Object.assign({}, t.rootFolder)
@@ -285,7 +296,7 @@ export default {
 
     insertFile: function (currentFolder, currentPath, userInput, newRootFolder){
       console.log('recursive call CurFolder: ', currentFolder, 'currentPath: ', currentPath, "userinput: ", userInput)
-      var t = this;
+      const t = this;
       if(!userInput) userInput = t.PDFLaunchpad.filePath.split('/')
       if(!currentFolder) currentFolder = newRootFolder
       if(!currentPath) currentPath = '/'
@@ -321,7 +332,7 @@ export default {
 
     viewPDF: function(url){
       console.log("hi from the app component");
-      var t = this;
+      const t = this;
       t.currentPDF.pageNumber = 1;
       PDFJS.disableWorker = true;
       PDFJS.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
@@ -330,7 +341,7 @@ export default {
 
     },
     queueRenderPage: function(num) {
-      var t = this;
+      const t = this;
       if (t.currentPDF.pageRendering) {
         t.currentPDF.pageNumPending = num;
       } else {
@@ -338,19 +349,19 @@ export default {
       }
     },
     onNextPage: function(){
-      var t = this;
+      const t = this;
       if(t.currentPDF.pageNumber >= t.currentPDF.numberOfPages) return;
       t.currentPDF.pageNumber++;
       t.queueRenderPage();
     },
     onPrevPage: function(){
-      var t = this;
+      const t = this;
       if(t.currentPDF.pageNumber <= 1) return;
       t.currentPDF.pageNumber--;
       t.queueRenderPage();
     },
     renderCanvas: function(){
-      var t = this;
+      const t = this;
       t.currentPDF.pageRendering = true;
       PDFJS.getDocument(t.currentPDF.url).then(function(pdf) {
         // you can now use *pdf* here
@@ -383,7 +394,7 @@ export default {
     },
 
     createFolder: function(currentPath, currentFolder){
-      var t = this;
+      const t = this;
 
       var newPath = currentPath.slice(0, -1)
       console.log(currentFolder.path, 'im the new folders parent folder');
@@ -406,8 +417,15 @@ export default {
 
     },
 
+    openModal: function(){
+      const t = this;
+      t.modalOpen = true;
+      console.log(t.$refs.mymodal)
+      t.$refs.mymodal.setAttribute('class', 'ui modal active')
+      t.PDFLaunchpad.filePath = '/'
+      // t.uploadPDF()
 
-
+    }
   }
 }
 </script>
