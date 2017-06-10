@@ -6,9 +6,9 @@ const knex = require('../../knex');
 
 router.route('/').get(function(req, res, next){
     knex('pdf')
-    .orderBy('id').then(function(folders){
-      console.log(folders)
-        res.json(folders);
+    .orderBy('id').then(function(pdfs){
+      console.log(pdfs)
+        res.json(pdfs);
     }).catch(function(err){
         next(new Error(err));
     });
@@ -18,7 +18,6 @@ router.route('/').post(function(req, res, next){
     knex('pdf')
     .insert({
   path: req.body.path,
-  folder_id: req.body.folderId,
   url: req.body.url
 })
 .returning("*")
