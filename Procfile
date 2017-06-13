@@ -1,2 +1,2 @@
-node npm run dev
+npm run dev
 node server/app.js
