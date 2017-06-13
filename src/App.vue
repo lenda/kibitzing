@@ -8,16 +8,23 @@
             <i class="comments icon"></i>
             Kibitzing
           </a>
-
           <a v-if="!loggedIn" href="#" class="item">Register</a>
           <a v-if="!loggedIn" href="#" class="item">Login</a>
           <a v-else href="#" class="item">{{ 'Hello, ' + activeUser.name }}</a>
-          <input type="file" v-if="loggedIn" id="file-chooser">
-          <button v-if="loggedIn" @click="uploadPDF">upload PDF</button>
-
         </div>
       </div>
     </nav>
+
+    <div ref="mymodal" class="ui modal">
+      <div class="header">Header</div>
+      <div class="content">
+        <input type="file" id="file-chooser">
+        <p>Enter the path for the new PDF</p>
+        <input type="text" v-model="PDFLaunchpad.filePath" >
+        <button @click="uploadPDF">Upload</button>
+      </div>
+    </div>
+
     <div class="ui stackable two column grid" v-if="!loggedIn" id="login-register-forms">
       <div class="row">
         <div class="column">
@@ -61,16 +68,20 @@
         </div>
       </div>
     </div>
+
     <div class="main-content" v-if="loggedIn">
       <div class="ui grid">
         <div class="three wide column left-column">
           <div v-if="foldersLoaded" class="tree">
             <app-folder :model="rootFolder" v-on:selectPDF="viewPDF($event)">
-
-
-
             </app-folder>
+
           </div>
+          <div v-else class="">
+            <img src="./assets/loading.png" alt="load" class="load">
+          </div>
+          <br>
+          <button v-if="loggedIn" @click="openModal">upload PDF</button>
         </div>
         <div class="eight wide column middle-column">
           <div>
@@ -98,7 +109,6 @@
               </div>
             </div>
             <div class="ui raised card">
-
               <div class="ui form">
                 <textarea placeholder="Type your comment here."></textarea>
               </div>
@@ -109,6 +119,7 @@
                 </div>
               </div>
             </div>
+
           </div>
         </div>
       </div>
@@ -122,82 +133,14 @@ window.Vue = require('vue')
 import Folder from "./components/Folder.vue"
 
 export default {
-  beforeCreate: function(){
-    //ajax call to ppulate data
-    this.$http.get('http://localhost:8000/api/folders/').then(function(folders){
-      console.log(this.rootFolder, "im the rootFolder");
-
-      this.$http.get('http://localhost:8000/api/pdfs').then(function(pdfs){
-        var fileSystem = {
-          path: '/',
-          id: 1,
-          files: {},
-          folders: {}
-        }
-
-        for (var folder of folders.body) {
-          if(folder.path.length === 1){
-            continue;
-          }
-          var folderPathArr = folder.path.split('/').slice(1)
-          console.log(folderPathArr, 'im the folderPathArr');
-          var folderName = folderPathArr[folderPathArr.length - 1]
-          var depthLvl = folderPathArr.length
-          if(depthLvl === 1){
-            console.log(folderName, "im the foldername");
-            fileSystem.folders[folderName] = {
-              path: folder.path,
-              folders: {},
-              files: {},
-              id: folder.id
-            };
-          } else {
-            var curFolder = fileSystem;
-            for(var i = 0; i < folderPathArr.length; i++) {
-              var cur = folderPathArr[i]
-              if(curFolder.folders[cur]){
-                curFolder = curFolder.folders[cur]
-              } else {
-                curFolder.folders[cur] = {
-                  path: folder.path,
-                  folders: {},
-                  files: {},
-                  id: folder.id
-                };
-                curFolder = curFolder.folders[cur]
-              }
-            }
-          }
-
-        }
-        console.log(fileSystem, "before the files are added")
-        for (var pdf of pdfs.body) {
-          if(pdf.path)
-          var filePathArr = pdf.path.split('/').slice(1)
-          var depthLvl = filePathArr.length
-          var fileName = filePathArr[depthLvl - 1]
-          var curFolder = fileSystem;
-          if(depthLvl === 1) {
-            curFolder.files[fileName] = pdf;
-          }else {
-            for (var i = 0; i < filePathArr.length - 1; i++) {
-              var cur = filePathArr[i]
-              if(curFolder.folders[cur]){
-                curFolder = curFolder.folders[cur]
-              }
-            }
-            curFolder.files[fileName] = pdf;
-          }
-        }
-        console.log(fileSystem, 'after the files have been added');
-        this.rootFolder = fileSystem;
-        this.foldersLoaded = true;
-      })
-    })
+  created: function(){
+    this.loadFileSystem()
   },
+
   components: {
     'app-folder': Folder
   },
+
   data: function(){
     return {
       foldersLoaded: false,
@@ -206,7 +149,6 @@ export default {
         filePath: '',
         fileUrl: ''
       },
-      filename: 'resume',
       rootFolder: {},
       loggedIn: true,
       activeUser: {
@@ -225,9 +167,75 @@ export default {
     }
   },
   methods: {
-    renderFileSystem: function(){
+    loadFileSystem: function(){
+      //ajax call to populate data
+      this.$http.get('http://localhost:8000/api/folders/').then(function(folders){
 
+        this.$http.get('http://localhost:8000/api/pdfs').then(function(pdfs){
+          var fileSystem = {
+            path: '/',
+            id: 1,
+            files: {},
+            folders: {}
+          }
+
+          for (var folder of folders.body) {
+            if(folder.path.length === 1){
+              continue;
+            }
+            var folderPathArr = folder.path.split('/').slice(1)
+            var folderName = folderPathArr[folderPathArr.length - 1]
+            var depthLvl = folderPathArr.length
+            if(depthLvl === 1){
+              fileSystem.folders[folderName] = {
+                path: folder.path,
+                folders: {},
+                files: {},
+                id: folder.id
+              };
+            } else {
+              var curFolder = fileSystem;
+              for(var i = 0; i < folderPathArr.length; i++) {
+                var cur = folderPathArr[i]
+                if(curFolder.folders[cur]){
+                  curFolder = curFolder.folders[cur]
+                } else {
+                  curFolder.folders[cur] = {
+                    path: folder.path,
+                    folders: {},
+                    files: {},
+                    id: folder.id
+                  };
+                  curFolder = curFolder.folders[cur]
+                }
+              }
+            }
+
+          }
+          for (var pdf of pdfs.body) {
+            if(pdf.path)
+            var filePathArr = pdf.path.split('/').slice(1)
+            var depthLvl = filePathArr.length
+            var fileName = filePathArr[depthLvl - 1]
+            var curFolder = fileSystem;
+            if(depthLvl === 1) {
+              curFolder.files[fileName] = pdf;
+            }else {
+              for (var i = 0; i < filePathArr.length - 1; i++) {
+                var cur = filePathArr[i]
+                if(curFolder.folders[cur]){
+                  curFolder = curFolder.folders[cur]
+                }
+              }
+              curFolder.files[fileName] = pdf;
+            }
+          }
+          this.rootFolder = fileSystem;
+          this.foldersLoaded = true;
+        })
+      })
     },
+
     userLogin: function(){
       this.loggedIn = true;
 
@@ -236,7 +244,7 @@ export default {
 
     },
     uploadPDF: function(){
-      var t = this;
+      const t = this;
       // uploading to AWS
       var config = new AWS.Config({
         accessKeyId: process.env.AKID, secretAccessKey: process.env.SAK
@@ -262,80 +270,28 @@ export default {
             console.log(err)
           } else if (data) {
             console.log("Upload Success", data.Location);
+            t.PDFLaunchpad.fileUrl = data.Location;
+            var newFilesPath = t.PDFLaunchpad.filePath
+            t.PDFLaunchpad.fileName = newFilesPath.slice(newFilesPath.lastIndexOf('/') + 1)
+            var newRoot = Object.assign({}, t.rootFolder)
+            t.insertFile(null, null, null, newRoot)
+            t.rootFolder = newRoot
+            t.loadFileSystem()
+            t.closeModal()
           }
         })
       }else{
         console.log('no file to upload...')
         return
       }
-      // end of AWS upload
-
-      //now add it to our tree view and create any folders needed and post new folders & files to db
-      var newFilesPath = 'personal/resumes/resume.pdf'
-      t.PDFLaunchpad.filePath = newFilesPath
-      t.PDFLaunchpad.fileName = newFilesPath.slice(newFilesPath.lastIndexOf('/') + 1)
-
-      // function insertFile (currentFolder, currentPath, userInput){
-      //   if(!userInput) userInput = newFilesPath.split('/')
-      //   if(!currentFolder) currentFolder = t.rootFolder
-      //   if(!currentPath) currentPath = '/'
-      //   if(userInput.length === 1){
-      //     console.log(currentFolder.path, 'Im the path tobe inserted into')
-      //     currentFolder.files.push({path: currentPath + userInput[0], url: 'https://s3-us-west-1.amazonaws.com/pdf-dev-learning/EleanorsResume.pdf'})
-      //     return
-      //   }
-      //
-      //   currentPath += userInput.shift() + '/';
-      //   for (let childFolder of currentFolder.folders) {
-      //     if ((childFolder.path + '/') === currentPath) {
-      //       currentFolder = childFolder
-      //       return insertFile(currentFolder, currentPath, userInput)
-      //     }
-      //   }
-      //   t.createFolder(currentPath, currentFolder)
-      //   for(let childFolder of currentFolder.folders){
-      //     if(childFolder.path + '/' === currentPath){
-      //       currentFolder = childFolder
-      //     }
-      //   }
-      //   return insertFile(currentFolder, currentPath, userInput)
-      // }
-      var newRoot = Object.assign({}, t.rootFolder)
-      t.insertFile(null, null, null, newRoot)
-      console.log(t.rootFolder, 'im the rootFolder after uploading a pdf');
-      t.rootFolder = newRoot
     },
 
-    insertFile: function (currentFolder, currentPath, userInput, newRootFolder){
-      console.log('recursive call CurFolder: ', currentFolder, 'currentPath: ', currentPath, "userinput: ", userInput)
-      var t = this;
-      if(!userInput) userInput = t.PDFLaunchpad.filePath.split('/')
-      if(!currentFolder) currentFolder = newRootFolder
-      if(!currentPath) currentPath = '/'
-      if(userInput.length === 1){
-        console.log(currentFolder.path, 'Im the path tobe inserted into')
-        currentFolder.files[t.PDFLaunchpad.fileName] = {path: currentPath + userInput[0], url: 'https://s3-us-west-1.amazonaws.com/pdf-dev-learning/EleanorsResume.pdf'};
-        return
-      }
-
-      currentPath += userInput.shift() + '/';
-      for (let childFolder in currentFolder.folders) {
-        console.log('made it to line 319 childfolder: ', currentFolder.folders[childFolder].path + '/', 'curPath:', currentPath)
-        if ((currentFolder.folders[childFolder].path + '/') === currentPath) {
-          console.log('indexgin into another obj');
-          currentFolder = currentFolder.folders[childFolder]
-          return t.insertFile(currentFolder, currentPath, userInput)
-        }
-      }
-      t.createFolder(currentPath, currentFolder)
-      for(let childFolder in currentFolder.folders){
-        console.log("line 327/ CurPath:", currentPath, 'Childfolder:', currentFolder.folders[childFolder].path);
-        if(currentFolder.folders[childFolder].path + '/' === currentPath){
-          console.log('they match!!!!!!!!!');
-          currentFolder = currentFolder.folders[childFolder]
-        }
-      }
-      return t.insertFile(currentFolder, currentPath, userInput)
+    insertFile: function (){
+      this.$http.post('http://localhost:8000/api/pdfs', {
+    path: this.PDFLaunchpad.filePath,
+    url: this.PDFLaunchpad.fileUrl
+  }).then(function(uploaded){
+      })
     },
 
     renamePDF: function(){
@@ -344,7 +300,7 @@ export default {
 
     viewPDF: function(url){
       console.log("hi from the app component");
-      var t = this;
+      const t = this;
       t.currentPDF.pageNumber = 1;
       PDFJS.disableWorker = true;
       PDFJS.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
@@ -353,7 +309,7 @@ export default {
 
     },
     queueRenderPage: function(num) {
-      var t = this;
+      const t = this;
       if (t.currentPDF.pageRendering) {
         t.currentPDF.pageNumPending = num;
       } else {
@@ -361,19 +317,19 @@ export default {
       }
     },
     onNextPage: function(){
-      var t = this;
+      const t = this;
       if(t.currentPDF.pageNumber >= t.currentPDF.numberOfPages) return;
       t.currentPDF.pageNumber++;
       t.queueRenderPage();
     },
     onPrevPage: function(){
-      var t = this;
+      const t = this;
       if(t.currentPDF.pageNumber <= 1) return;
       t.currentPDF.pageNumber--;
       t.queueRenderPage();
     },
     renderCanvas: function(){
-      var t = this;
+      const t = this;
       t.currentPDF.pageRendering = true;
       PDFJS.getDocument(t.currentPDF.url).then(function(pdf) {
         // you can now use *pdf* here
@@ -406,13 +362,10 @@ export default {
     },
 
     createFolder: function(currentPath, currentFolder){
-      var t = this;
+      const t = this;
 
       var newPath = currentPath.slice(0, -1)
-      console.log(currentFolder.path, 'im the new folders parent folder');
-      console.log(newPath, 'i should the the folders name');
       var folderName = newPath.slice(newPath.lastIndexOf('/') + 1)
-      console.log(folderName, "<-- im the foldername");
       currentFolder.folders[folderName] = {path: newPath, folders: {}, files: {}};
 
     },
@@ -429,8 +382,18 @@ export default {
 
     },
 
+    openModal: function(){
+      const t = this;
+      t.modalOpen = true;
+      t.$refs.mymodal.setAttribute('class', 'ui modal active')
+      t.PDFLaunchpad.filePath = '/'
+    },
 
-
+    closeModal: function(){
+      const t = this;
+      t.modalOpen = false;
+      t.$refs.mymodal.setAttribute('class', 'ui modal')
+    }
   }
 }
 </script>
@@ -476,4 +439,19 @@ export default {
 .tree-item {
   padding-left: 1em;
 }
+.load {
+  height: 100px;
+  width: 100px;
+  animation: rotate 2s infinite;
+  -webkit-animation: rotate 2s infinite;
+  }
+  /* Chrome, Safari, Opera */
+  @-webkit-keyframes rotate {
+    50% {-webkit-transform: rotate(360deg);}
+  }
+
+  /* Standard syntax */
+  @keyframes rotate {
+    50% {transform: rotate(360deg);}
+  }
 </style>
