@@ -91,7 +91,10 @@
             &nbsp; &nbsp;
             <span>Page: <span id="page_num" v-if="currentPDF.pageNumber">{{ currentPDF.pageNumber }}</span> / <span id="page_count">{{ currentPDF.numberOfPages }}</span></span>
           </div>
-          <canvas id="the-canvas" ref="pdfcanvas"></canvas>
+          <div ref="canvasContainer">
+            <canvas id="the-canvas" ref="pdfcanvas"></canvas>
+            <div class="textLayer" ref="textlayerdiv"></div>
+          </div>
         </div>
         <div class="four wide column right-column">
           <div class="ui one stackable cards">
@@ -127,10 +130,10 @@
 
   </div>
 </template>
-
 <script>
 window.Vue = require('vue')
 import Folder from "./components/Folder.vue"
+import { TextLayerBuilder } from 'pdfjs-dist/lib/web/text_layer_builder'
 
 export default {
   created: function(){
@@ -288,9 +291,9 @@ export default {
 
     insertFile: function (){
       this.$http.post('http://localhost:8000/api/pdfs', {
-    path: this.PDFLaunchpad.filePath,
-    url: this.PDFLaunchpad.fileUrl
-  }).then(function(uploaded){
+        path: this.PDFLaunchpad.filePath,
+        url: this.PDFLaunchpad.fileUrl
+      }).then(function(uploaded){
       })
     },
 
@@ -343,19 +346,35 @@ export default {
           var context = canvas.getContext('2d');
           canvas.height = viewport.height;
           canvas.width = viewport.width;
+          // most likely won't work since $refs are virtual dom - you need the actual dom
+          var canvasOffset = $('#the-canvas').offset();
+          console.log('the canvas offset is ',canvasOffset)
 
-          var renderContext = {
-            canvasContext: context,
-            viewport: viewport
-          };
-          var renderTask = page.render(renderContext);
-          renderTask.promise.then(function() {
-            t.currentPDF.pageRendering = false;
-            if (t.currentPDF.pageNumPending !== null) {
-              // New page rendering is pending
-              t.renderCanvas(t.currentPDF.pageNumPending);
-              t.currentPDF.pageNumPending = null;
-            }
+
+          var textLayerDiv = t.$refs.textlayerdiv;
+          textLayerDiv.height = viewport.height;
+          textLayerDiv.width = viewport.width;
+          $('.textLayer').offset({top: canvasOffset.top, left: canvasOffset.left})
+
+          page.getTextContent().then(function(textContent) {
+            console.log(textContent, "im the textContent");
+            var textLayer =     new TextLayerBuilder({textLayerDiv: textLayerDiv, pageIndex: t.currentPDF.pageNumber - 1, viewport: viewport});
+            textLayer.setTextContent(textContent);
+            var renderContext = {
+              canvasContext: context,
+              viewport: viewport,
+              textLayer: textLayer
+            };
+            textLayer.render()
+            var renderTask = page.render(renderContext);
+            renderTask.promise.then(function() {
+              t.currentPDF.pageRendering = false;
+              if (t.currentPDF.pageNumPending !== null) {
+                // New page rendering is pending
+                t.renderCanvas(t.currentPDF.pageNumPending);
+                t.currentPDF.pageNumPending = null;
+              }
+            })
           });
         });
       });
@@ -372,6 +391,19 @@ export default {
     renameFolder: function(){
 
     },
+    getOffset: function (elt) {
+      var rect = elt.getBoundingClientRect(), bodyElt = document.body;
+
+      return {
+        top: rect.top + bodyElt .scrollTop,
+        left: rect.left + bodyElt .scrollLeft
+      }
+    },
+    setOffset: function (elt, top, left) {
+        elt.top = top;
+        elt.npleft = left
+    },
+
     createComment: function(){
 
     },
@@ -444,14 +476,62 @@ export default {
   width: 100px;
   animation: rotate 2s infinite;
   -webkit-animation: rotate 2s infinite;
-  }
-  /* Chrome, Safari, Opera */
-  @-webkit-keyframes rotate {
-    50% {-webkit-transform: rotate(360deg);}
-  }
+}
+/* Chrome, Safari, Opera */
+@-webkit-keyframes rotate {
+  50% {-webkit-transform: rotate(360deg);}
+}
 
-  /* Standard syntax */
-  @keyframes rotate {
-    50% {transform: rotate(360deg);}
-  }
+/* Standard syntax */
+@keyframes rotate {
+  50% {transform: rotate(360deg);}
+}
+
+/*divs will show up! */
+::selection { background:rgba(0,0,255,0.3); }
+::-moz-selection { background:rgba(0,0,255,0.3); }
+
+.textLayer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    color: #000;
+    font-family: sans-serif;
+    overflow: hidden;
+}
+
+.textLayer > div {
+    color: transparent;
+    position: absolute;
+    line-height: 1;
+    white-space: pre;
+    cursor: text;
+}
+
+.textLayer .highlight {
+    margin: -1px;
+    padding: 1px;
+
+    background-color: rgba(180, 0, 170, 0.2);
+    border-radius: 4px;
+}
+
+.textLayer .highlight.begin {
+    border-radius: 4px 0px 0px 4px;
+}
+
+.textLayer .highlight.end {
+    border-radius: 0px 4px 4px 0px;
+}
+
+.textLayer .highlight.middle {
+    border-radius: 0px;
+}
+
+.textLayer .highlight.selected {
+    background-color: rgba(0, 100, 0, 0.2);
+}
+
 </style>

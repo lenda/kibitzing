@@ -18,6 +18,7 @@
     "knex": "^0.13.0",
     "nodemon": "^1.11.0",
     "passport": "^0.3.2",
+    "pdfjs-dist": "^1.8.448",
     "pg": "^6.2.3",
     "swagger-js-codegen": "^1.8.0",
     "vue": "^2.2.1",
