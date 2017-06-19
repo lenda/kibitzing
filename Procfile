@@ -1,5 +1,5 @@
 release: knex migrate:rollback
-release: knex migrate:latest
-release: knex seed:run
+release: knex --knexfile ./server/knexfile.js migrate:latest
+release: knex --knexfile ./server/knexfile.js seed:run
 web: npm run dev
 api: node server/app.js
