@@ -172,9 +172,9 @@ export default {
   methods: {
     loadFileSystem: function(){
       //ajax call to populate data
-      this.$http.get('http://localhost:8000/api/folders/').then(function(folders){
+      this.$http.get('http://kibitzing.herokuapp.com/api/folders/').then(function(folders){
 
-        this.$http.get('http://localhost:8000/api/pdfs').then(function(pdfs){
+        this.$http.get('http://kibitzing.herokuapp.com/api/pdfs').then(function(pdfs){
           var fileSystem = {
             path: '/',
             id: 1,
@@ -290,7 +290,7 @@ export default {
     },
 
     insertFile: function (){
-      this.$http.post('http://localhost:8000/api/pdfs', {
+      this.$http.post('http://kibitzing.herokuapp.com/api/pdfs', {
         path: this.PDFLaunchpad.filePath,
         url: this.PDFLaunchpad.fileUrl
       }).then(function(uploaded){
@@ -356,16 +356,12 @@ export default {
           textLayerDiv.width = viewport.width;
           $('.textLayer').offset({top: canvasOffset.top, left: canvasOffset.left})
 
-          page.getTextContent().then(function(textContent) {
-            console.log(textContent, "im the textContent");
-            var textLayer =     new TextLayerBuilder({textLayerDiv: textLayerDiv, pageIndex: t.currentPDF.pageNumber - 1, viewport: viewport});
-            textLayer.setTextContent(textContent);
+          // page.getTextContent().then(function(textContent) {
             var renderContext = {
               canvasContext: context,
               viewport: viewport,
-              textLayer: textLayer
+              // textLayer: textLayer
             };
-            textLayer.render()
             var renderTask = page.render(renderContext);
             renderTask.promise.then(function() {
               t.currentPDF.pageRendering = false;
@@ -374,8 +370,15 @@ export default {
                 t.renderCanvas(t.currentPDF.pageNumPending);
                 t.currentPDF.pageNumPending = null;
               }
+              return page.getTextContent()
+            }).then(function(textContent){
+              console.log(textContent, "im the textContent");
+              var textLayer =     new TextLayerBuilder({textLayerDiv: textLayerDiv, pageIndex: t.currentPDF.pageNumber - 1, viewport: viewport});
+              textLayer.setTextContent(textContent);
+
+              textLayer.render()
             })
-          });
+          // });
         });
       });
     },
@@ -487,7 +490,6 @@ export default {
   50% {transform: rotate(360deg);}
 }
 
-/*divs will show up! */
 ::selection { background:rgba(0,0,255,0.3); }
 ::-moz-selection { background:rgba(0,0,255,0.3); }
 
