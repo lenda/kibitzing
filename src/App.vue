@@ -18,10 +18,23 @@
     <div ref="mymodal" class="ui modal">
       <div class="header">Header</div>
       <div class="content">
+        Choose your file...<br>
         <input type="file" id="file-chooser">
         <p>Enter the path for the new PDF</p>
         <input type="text" v-model="PDFLaunchpad.filePath" >
         <button @click="uploadPDF">Upload</button>
+        <button @click="closeModal">Cancel</button>
+
+      </div>
+    </div>
+
+    <div ref="foldermodal" class="ui modal">
+      <div class="header">Header</div>
+      <div class="content">
+        <p>Enter the name of the new folder</p>
+        <input type="text" v-model="folderLaunchpad.folderName" >
+        <button @click="createFolder">Create</button>
+        <button @click="closeFolderModal">Cancel</button>
       </div>
     </div>
 
@@ -73,7 +86,7 @@
       <div class="ui grid">
         <div class="three wide column left-column">
           <div v-if="foldersLoaded" class="tree">
-            <app-folder :model="rootFolder" v-on:selectPDF="viewPDF($event)">
+            <app-folder :model="rootFolder" v-on:selectPDF="viewPDF($event)" v-on:handleFolderCreate="openFolderModal($event)" @dblclick.native="openFolderModal('/')">
             </app-folder>
 
           </div>
@@ -147,6 +160,10 @@ export default {
         fileName: '',
         filePath: '',
         fileUrl: ''
+      },
+      folderLaunchpad: {
+        folderName: '',
+        folderPath: ''
       },
       rootFolder: {},
       loggedIn: true,
@@ -277,7 +294,6 @@ export default {
             var newRoot = Object.assign({}, t.rootFolder)
             t.insertFile(null, null, null, newRoot)
             t.rootFolder = newRoot
-            t.loadFileSystem()
             t.closeModal()
           }
         })
@@ -288,10 +304,14 @@ export default {
     },
 
     insertFile: function (){
+      const t = this;
       this.$http.post(process.env.BASE_URL + '/api/pdfs', {
-        path: this.PDFLaunchpad.filePath,
-        url: this.PDFLaunchpad.fileUrl
+        path: t.PDFLaunchpad.filePath,
+        url: t.PDFLaunchpad.fileUrl
       }).then(function(uploaded){
+        t.loadFileSystem()
+
+        console.log(uploaded);
       })
     },
 
@@ -384,12 +404,19 @@ export default {
       });
     },
 
-    createFolder: function(currentPath, currentFolder){
+    createFolder: function(parentFolderPath, folderName){
       const t = this;
-
-      var newPath = currentPath.slice(0, -1)
-      var folderName = newPath.slice(newPath.lastIndexOf('/') + 1)
-      currentFolder.folders[folderName] = {path: newPath, folders: {}, files: {}};
+      console.log('hello from create folder')
+      var newFolderPath = t.folderLaunchpad.folderPath + '/' + t.folderLaunchpad.folderName
+      console.log('new folder path: ', newFolderPath)
+      // make a post request to the folder table with the new folder.
+      this.$http.post(process.env.BASE_URL + '/api/folders', {
+        path: newFolderPath
+      }).then(function(created){
+        t.loadFileSystem()
+        console.log(created);
+      })
+      t.closeFolderModal()
 
     },
     renameFolder: function(){
@@ -406,7 +433,7 @@ export default {
     })
   },
     editComment: function(){
-      
+
     },
     createThread: function(){
 
@@ -423,6 +450,22 @@ export default {
       const t = this;
       t.modalOpen = false;
       t.$refs.mymodal.setAttribute('class', 'ui modal')
+    },
+    openFolderModal: function(parentFolderPath){
+      console.log(parentFolderPath, 'hello from open foldermodal');
+      const t = this;
+      t.folderLaunchpad.folderPath = parentFolderPath
+      t.modalOpen = true;
+      t.$refs.foldermodal.setAttribute('class', 'ui modal active')
+    },
+
+    closeFolderModal: function(){
+      const t = this;
+      console.log(t.folderLaunchpad.folderName);
+
+      t.modalOpen = false;
+      t.$refs.foldermodal.setAttribute('class', 'ui modal')
+
     }
   },
   computed: {
