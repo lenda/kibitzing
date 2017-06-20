@@ -4,6 +4,7 @@ const expressSession = require('express-session');
 const app = express();
 const PORT = process.env.PORT || 8000;
 const routes = require ("./routes/index");
+require('dotenv').config()
 
 app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.json());

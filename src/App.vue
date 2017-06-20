@@ -172,9 +172,9 @@ export default {
   methods: {
     loadFileSystem: function(){
       //ajax call to populate data
-      this.$http.get('http://kibitzing.herokuapp.com/api/folders/').then(function(folders){
+      this.$http.get(process.env.BASE_URL + '/api/folders/').then(function(folders){
 
-        this.$http.get('http://kibitzing.herokuapp.com/api/pdfs').then(function(pdfs){
+        this.$http.get(process.env.BASE_URL + '/api/pdfs').then(function(pdfs){
           var fileSystem = {
             path: '/',
             id: 1,
@@ -290,7 +290,7 @@ export default {
     },
 
     insertFile: function (){
-      this.$http.post('http://kibitzing.herokuapp.com/api/pdfs', {
+      this.$http.post(process.env.BASE_URL + '/api/pdfs', {
         path: this.PDFLaunchpad.filePath,
         url: this.PDFLaunchpad.fileUrl
       }).then(function(uploaded){
