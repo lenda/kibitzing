@@ -6,7 +6,7 @@
 
 <script>
 export default {
-    props: ['path', 'url'],
+    props: ['path', 'url', 'id'],
     computed: {
         fileName: function(){
             var lastIdx = this.path.lastIndexOf('/');
@@ -16,7 +16,8 @@ export default {
     methods: {
         select: function(){
             console.log('hello from the file component', this.url)
-            this.$emit('select', this.url)
+            console.log('I am the file id:', this.id);
+            this.$emit('select', {url: this.url, id: this.id, path: this.path})
         }
     }
 

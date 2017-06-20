@@ -98,19 +98,13 @@
         </div>
         <div class="four wide column right-column">
           <div class="ui one stackable cards">
-            <div class="ui raised card">
-              <div class="content">
-                <div class="description">
-                  <p>This is a fake comment</p>
-                </div>
-              </div>
-              <div class="extra content">
-                <button class="ui primary button">Reply</button>
-                <div class="right floated author">
-                  <i class="user big icon"></i> Matt
-                </div>
-              </div>
-            </div>
+            <app-comment
+            v-for="comment of this.comments"
+            :pdfid="comment.pdf_id"
+            :content="comment.content"
+            :userid="comment.user_id"
+            >
+            </app-comment>
             <div class="ui raised card">
               <div class="ui form">
                 <textarea placeholder="Type your comment here."></textarea>
@@ -133,6 +127,7 @@
 <script>
 window.Vue = require('vue')
 import Folder from "./components/Folder.vue"
+import Comment from "./components/Comment.vue"
 import { TextLayerBuilder } from 'pdfjs-dist/lib/web/text_layer_builder'
 
 export default {
@@ -141,7 +136,8 @@ export default {
   },
 
   components: {
-    'app-folder': Folder
+    'app-folder': Folder,
+    'app-comment': Comment
   },
 
   data: function(){
@@ -160,6 +156,8 @@ export default {
         email: null
       },
       currentPDF: {
+        id: null,
+        path: null,
         numberOfPages: null,
         pageNumber: null,
         url: 'http://s3-us-west-1.amazonaws.com/pdf-dev-learning/2013hmda-guide.pdf',
@@ -301,13 +299,16 @@ export default {
 
     },
 
-    viewPDF: function(url){
+    viewPDF: function(pdf){
       console.log("hi from the app component");
       const t = this;
       t.currentPDF.pageNumber = 1;
       PDFJS.disableWorker = true;
       PDFJS.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
-      t.currentPDF.url = url
+      t.currentPDF.url = pdf.url;
+      t.currentPDF.id = pdf.id;
+      t.currentPDF.path = pdf.path;
+      console.log(t.currentPDF.id, "I'm the currentPDF id")
       t.renderCanvas();
 
     },
@@ -394,21 +395,14 @@ export default {
     renameFolder: function(){
 
     },
-    getOffset: function (elt) {
-      var rect = elt.getBoundingClientRect(), bodyElt = document.body;
-
-      return {
-        top: rect.top + bodyElt .scrollTop,
-        left: rect.left + bodyElt .scrollLeft
-      }
-    },
-    setOffset: function (elt, top, left) {
-        elt.top = top;
-        elt.npleft = left
-    },
 
     createComment: function(){
-
+      this.$http.post(process.env.BASE_URL + '/api/comments/', {
+        thread_id: ,
+        content: ,
+        user_id:
+      }).then(function(comments){
+        console.log(comments, "comment created");
     },
     editComment: function(){
 
@@ -428,6 +422,14 @@ export default {
       const t = this;
       t.modalOpen = false;
       t.$refs.mymodal.setAttribute('class', 'ui modal')
+    }
+  },
+  computed: {
+    comments: function () {
+      // return this.$http.get(process.env.BASE_URL + '/api/comments/').then(function(comments){
+      //   return comments
+      return [{pdf_id: 2, user_id: 1, content: "hello"}, {pdf_id: 2, user_id: 1, content: "world"}, {pdf_id: 2, user_id: 1, content: "fake comment"}]
+      // })
     }
   }
 }
