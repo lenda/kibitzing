@@ -6,7 +6,7 @@
 
 
         <app-file v-show="hasFiles" v-for="file of model.files" :key="file.id" :id="file.id" :path="file.path" :url="file.url" v-on:select="selectPDF($event)"></app-file>
-            <folder v-show="hasFolders" v-for="folder of model.folders" :model="folder" :key="folder.id" v-on:selectPDF="selectPDF($event)"></folder>
+            <folder v-show="hasFolders" v-for="folder of model.folders" :model="folder" :key="folder.id" v-on:selectPDF="selectPDF($event)" @dblclick.native.stop="createSubfolder(folder.path)" v-on:handleFolderCreate="handleFolderCreate"></folder>
     </div>
 </template>
 
@@ -23,13 +23,24 @@ import File from "./File.vue"
     },
     data: function(){
         return {
-
+          newFolderPath: ''
         }
     },
     methods: {
         selectPDF(pdf) {
             console.log("folder " + this.folderName +" received ",pdf);
-            this.$emit('selectPDF',pdf);
+            this.$emit('selectPDF', pdf);
+        },
+        createSubfolder(parentFolderPath) {
+          // this.newFolderPath = parentFolderPath
+          this.handleFolderCreate(parentFolderPath)
+
+        },
+        handleFolderCreate(parentFolderPath){
+          // this.newFolderPath = parentFolderPath
+          console.log('hello from handleFolderCreate', parentFolderPath)
+          this.$emit('handleFolderCreate', parentFolderPath);
+
         }
 
     },
