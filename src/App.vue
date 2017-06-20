@@ -396,16 +396,17 @@ export default {
 
     },
 
-    createComment: function(){
+    createComment: function(threadid, content, userid){
       this.$http.post(process.env.BASE_URL + '/api/comments/', {
-        thread_id: ,
-        content: ,
-        user_id:
+        thread_id: threadid,
+        content: content,
+        user_id: userid
       }).then(function(comments){
         console.log(comments, "comment created");
-    },
+    })
+  },
     editComment: function(){
-
+      
     },
     createThread: function(){
 
