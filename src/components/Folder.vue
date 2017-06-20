@@ -23,7 +23,6 @@ import File from "./File.vue"
     },
     data: function(){
         return {
-          newFolderPath: ''
         }
     },
     methods: {
@@ -32,12 +31,10 @@ import File from "./File.vue"
             this.$emit('selectPDF', pdf);
         },
         createSubfolder(parentFolderPath) {
-          // this.newFolderPath = parentFolderPath
           this.handleFolderCreate(parentFolderPath)
 
         },
         handleFolderCreate(parentFolderPath){
-          // this.newFolderPath = parentFolderPath
           console.log('hello from handleFolderCreate', parentFolderPath)
           this.$emit('handleFolderCreate', parentFolderPath);
 
